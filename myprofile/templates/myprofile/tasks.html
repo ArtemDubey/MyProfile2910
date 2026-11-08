@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мої справи</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #fff5f7 0%, #ffebee 50%, #fce4ec 100%);
+            color: #4a3e43;
+        }
+        body.light .container {
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 182, 193, 0.4);
+            box-shadow: 0 12px 40px rgba(233, 30, 99, 0.08);
+        }
+        body.light input[type="text"] {
+            background: #ffffff;
+            color: #4a3e43;
+            border: 1px solid #ffcdd2;
+        }
+        body.light .task-item {
+            background: #fff0f3;
+            border: 1px solid #ffe0e6;
+        }
+        body.light .nav-bar a {
+            color: #e91e63;
+        }
+
+        body.dark {
+            background: linear-gradient(135deg, #181214 0%, #211518 100%);
+            color: #f5e6e8;
+        }
+        body.dark .container {
+            background: rgba(36, 24, 28, 0.9);
+            border: 1px solid rgba(255, 128, 171, 0.15);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+        body.dark input[type="text"] {
+            background: #2d1f23;
+            color: #fff;
+            border: 1px solid #4a3339;
+        }
+        body.dark .task-item {
+            background: #2d1d22;
+            border: 1px solid #3d262d;
+        }
+        body.dark .nav-bar a {
+            color: #ff79b0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 35px 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .nav-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+        }
+
+        .nav-bar a {
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .nav-bar a:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            font-size: 1.7em;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .counter-badge {
+            text-align: center;
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 25px;
+        }
+
+        .add-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 13px 16px;
+            border-radius: 12px;
+            font-size: 0.95em;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: #e91e63 !important;
+            box-shadow: 0 0 0 3px rgba(233, 30, 99, 0.15);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e91e63 0%, #c2185b 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(233, 30, 99, 0.25);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(233, 30, 99, 0.35);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff5252 0%, #d32f2f 100%);
+            color: white;
+            padding: 8px 14px;
+            font-size: 0.85em;
+            box-shadow: 0 2px 10px rgba(211, 47, 47, 0.2);
+        }
+        .btn-danger:hover {
+            box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3);
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .empty-msg {
+            text-align: center;
+            opacity: 0.6;
+            padding: 25px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body class="{{ theme }}">
+    <div class="container">
+        <div class="nav-bar">
+            <a href="{% url 'home' %}">← Профіль</a>
+            <a href="{% url 'settings' %}">Налаштування ⚙️</a>
+            <span>Користувач: <strong>{{ username }}</strong></span>
+        </div>
+
+        <h1>📝 Мої справи</h1>
+
+        <div class="counter-badge">
+            Загальна кількість справ: <strong>{{ total_tasks }}</strong>
+        </div>
+
+        <form method="POST" class="add-form">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_task">
+            <input type="text" name="task" placeholder="Введіть нову справу..." required>
+            <button type="submit" class="btn btn-primary">Додати</button>
+        </form>
+
+        {% if tasks %}
+            <ul class="task-list">
+                {% for task in tasks %}
+                    <li class="task-item">
+                        <span>{{ task }}</span>
+                        <form method="POST" style="margin: 0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove_task">
+                            <input type="hidden" name="index" value="{{ forloop.counter0 }}">
+                            <button type="submit" class="btn btn-danger">Видалити</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="empty-msg">Список справ порожній.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
